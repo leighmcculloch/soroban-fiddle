@@ -1,0 +1,33 @@
+@charset "utf-8";
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.1em;
+}
+
+.columns {
+    display: flex;
+}
+.left, .right {
+    flex-basis: auto;
+    flex-shrink: 1;
+    flex-grow: 1;
+}
+
+.box {
+    padding: 20px;
+    background-color: #ccc;
+    margin-bottom: 20px;
+}
+
+code {
+    white-space: pre;
+}
+
+table tr th, table tr td {
+    text-align: left;
+}
+
+table tr.selected {
+    background-color: #ccc;
+}
