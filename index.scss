@@ -10,11 +10,11 @@ body {
 }
 .left, .right {
     flex-basis: auto;
-    flex-shrink: 1;
+    flex-shrink: 0;
     flex-grow: 1;
 }
 
-.box {
+.component.contractinfo, .component.invoke, .component.eventinfo {
     padding: 20px;
     background-color: #ccc;
     margin-bottom: 20px;

@@ -1561,6 +1561,7 @@ dependencies = [
  "soroban-spec",
  "stellar-xdr 0.0.7 (git+https://github.com/stellar/rs-stellar-xdr?rev=e88f9fa7)",
  "wasm-bindgen-futures",
+ "web-sys",
  "yew",
 ]
 

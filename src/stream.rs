@@ -4,18 +4,20 @@ use stellar_xdr::{
     InvokeHostFunctionResult, OperationResult, OperationResultTr, ReadXdr, ScObject, ScSpecEntry,
     ScSpecFunctionV0, ScVal, TransactionResult, TransactionResultResult,
 };
-use yew::prelude::{html, Html};
 
+#[derive(Clone, PartialEq, PartialOrd)]
 pub struct Event {
     pub tx: String,
     pub at: String,
     pub body: EventBody,
 }
 
+#[derive(Clone, PartialEq, PartialOrd)]
 pub enum EventBody {
     Deployment(Contract),
 }
 
+#[derive(Clone, PartialEq, PartialOrd)]
 pub struct Contract {
     pub id: String,
     pub bytes: Vec<u8>,
@@ -46,12 +48,13 @@ impl Contract {
             None,
         )
         .unwrap();
-        rust.to_formatted_string().unwrap()
+        let rust = rust.to_formatted_string().unwrap();
+        let rust = rust.replace("soroban_sdk::", "");
+        rust
     }
 
-    pub fn spec_html(&self) -> Html {
-        let rust = self.spec_rust().replace("soroban_sdk::", "");
-        html!(<code>{ rust }</code>)
+    pub fn spec_json(&self) -> String {
+        soroban_spec::gen::json::generate_from_wasm(self.bytes.as_slice()).unwrap()
     }
 }
 
