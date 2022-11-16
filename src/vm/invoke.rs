@@ -4,9 +4,9 @@ use soroban_env_host::{
     budget::Budget,
     storage::{SnapshotSource, Storage},
     xdr::{
-        self, ContractDataEntry, Hash, HostFunction, LedgerEntry, LedgerEntryData, LedgerEntryExt,
-        LedgerKey, LedgerKeyContractData, ScContractCode, ScHostStorageErrorCode, ScObject,
-        ScStatic, ScStatus, ScVal,
+        self, AccountId, ContractDataEntry, Hash, HostFunction, LedgerEntry, LedgerEntryData,
+        LedgerEntryExt, LedgerKey, LedgerKeyContractData, PublicKey, ScContractCode,
+        ScHostStorageErrorCode, ScObject, ScStatic, ScStatus, ScVal, Uint256,
     },
     Host, HostError, Status,
 };
@@ -52,19 +52,20 @@ pub fn invoke(code: Vec<u8>, id: String, function: String) -> String {
         ScContractCode::Wasm(code.try_into().unwrap()),
     )));
     let h = Host::with_storage_and_budget(storage, Budget::default());
-    let res = h
-        .invoke_function(
-            HostFunction::InvokeContract,
-            vec![
-                ScVal::Object(Some(ScObject::Bytes(hex_id.try_into().unwrap()))),
-                ScVal::Symbol((&function).try_into().unwrap()),
-                ScVal::Symbol("asdf".try_into().unwrap()),
-            ]
-            .try_into()
-            .unwrap(),
-        )
-        .unwrap();
-    serde_json::to_string_pretty(&res).unwrap()
+    h.set_source_account(AccountId(PublicKey::PublicKeyTypeEd25519(Uint256([0; 32]))));
+    let result = h.invoke_function(
+        HostFunction::InvokeContract,
+        vec![
+            ScVal::Object(Some(ScObject::Bytes(hex_id.try_into().unwrap()))),
+            ScVal::Symbol((&function).try_into().unwrap()),
+        ]
+        .try_into()
+        .unwrap(),
+    );
+    match result {
+        Ok(result) => serde_json::to_string_pretty(&result).unwrap(),
+        Err(err) => err.to_string(),
+    }
 
     // let (storage, budget, events) = h.try_finish().map_err(|_h| {
     //     HostError::from(ScStatus::HostStorageError(

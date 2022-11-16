@@ -14,7 +14,26 @@ pub struct Event {
 
 #[derive(Clone, PartialEq, PartialOrd)]
 pub enum EventBody {
+    Invocation(Invocation),
     Deployment(Contract),
+}
+
+#[derive(Clone, PartialEq, PartialOrd)]
+pub struct Invocation {
+    pub id: String,
+    pub function: String,
+    pub args: Vec<Option<ScVal>>,
+    pub result: Option<ScVal>,
+}
+
+impl Invocation {
+    pub fn args_json(&self) -> String {
+        serde_json::to_string_pretty(&self.args).unwrap_or_default()
+    }
+
+    pub fn results_json(&self) -> String {
+        serde_json::to_string_pretty(&self.result).unwrap_or_default()
+    }
 }
 
 #[derive(Clone, PartialEq, PartialOrd)]
@@ -42,15 +61,11 @@ impl Contract {
     }
 
     pub fn spec_rust(&self) -> String {
-        let rust = soroban_spec::gen::rust::generate_from_wasm(
-            self.bytes.as_slice(),
-            "contract.wasm",
-            None,
-        )
-        .unwrap();
-        let rust = rust.to_formatted_string().unwrap();
-        let rust = rust.replace("soroban_sdk::", "");
-        rust
+        soroban_spec::gen::rust::generate_from_wasm(self.bytes.as_slice(), "contract.wasm", None)
+            .unwrap()
+            .to_formatted_string()
+            .unwrap()
+            .replace("soroban_sdk::", "")
     }
 
     pub fn spec_json(&self) -> String {
@@ -108,42 +123,109 @@ pub async fn collect(base_url: &str, o: Order, f: impl Fn(Event)) {
             .filter(|r| r.r#type == "invoke_host_function");
 
         for r in records {
-            if r.function.as_deref() == Some("HostFunctionHostFnCreateContractWithSourceAccount") {
-                let tx = get_transaction(base_url, &r.transaction_hash).await;
-                let id = if let Ok(TransactionResult {
-                    result: TransactionResultResult::TxSuccess(op_results),
-                    ..
-                }) = TransactionResult::from_xdr_base64(tx.result_xdr)
-                {
-                    if let Some(OperationResult::OpInner(OperationResultTr::InvokeHostFunction(
-                        InvokeHostFunctionResult::Success(ScVal::Object(Some(ScObject::Bytes(id)))),
-                    ))) = op_results.get(0)
-                    {
-                        Some(hex::encode(id))
+            match r.function.as_deref() {
+                Some("HostFunctionHostFnInvokeContract") => {
+                    let id = if let Some(id) = r.parameters.get(0) {
+                        if let Ok(ScVal::Object(Some(ScObject::Bytes(id)))) =
+                            ScVal::from_xdr_base64(&id.value)
+                        {
+                            Some(hex::encode(id))
+                        } else {
+                            None
+                        }
                     } else {
                         None
-                    }
-                } else {
-                    None
-                };
-                let bytes = if let Some(code) = r.parameters.get(0) {
-                    if let Ok(ScVal::Object(Some(ScObject::Bytes(bytes)))) =
-                        ScVal::from_xdr_base64(&code.value)
-                    {
-                        Some(bytes.into())
+                    };
+                    let function = if let Some(function) = r.parameters.get(1) {
+                        if let Ok(ScVal::Symbol(function)) = ScVal::from_xdr_base64(&function.value)
+                        {
+                            Some(function.to_string_lossy())
+                        } else {
+                            None
+                        }
                     } else {
                         None
+                    };
+                    let args = r
+                        .parameters
+                        .iter()
+                        .skip(2)
+                        .map(|a| ScVal::from_xdr_base64(&a.value).ok())
+                        .collect::<Vec<_>>();
+                    let tx = get_transaction(base_url, &r.transaction_hash).await;
+                    let result = if let Ok(TransactionResult {
+                        result: TransactionResultResult::TxSuccess(op_results),
+                        ..
+                    }) = TransactionResult::from_xdr_base64(tx.result_xdr)
+                    {
+                        if let Some(OperationResult::OpInner(
+                            OperationResultTr::InvokeHostFunction(
+                                InvokeHostFunctionResult::Success(result),
+                            ),
+                        )) = op_results.get(0)
+                        {
+                            Some(result.clone())
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+                    if let (Some(id), Some(function)) = (id, function) {
+                        f(Event {
+                            tx: r.transaction_hash.clone(),
+                            at: r.created_at.clone(),
+                            body: EventBody::Invocation(Invocation {
+                                id,
+                                function,
+                                args,
+                                result,
+                            }),
+                        });
                     }
-                } else {
-                    None
-                };
-                if let (Some(id), Some(bytes)) = (id, bytes) {
-                    f(Event {
-                        tx: r.transaction_hash.clone(),
-                        at: r.created_at.clone(),
-                        body: EventBody::Deployment(Contract { id, bytes }),
-                    });
                 }
+                Some("HostFunctionHostFnCreateContractWithSourceAccount") => {
+                    let tx = get_transaction(base_url, &r.transaction_hash).await;
+                    let id = if let Ok(TransactionResult {
+                        result: TransactionResultResult::TxSuccess(op_results),
+                        ..
+                    }) = TransactionResult::from_xdr_base64(tx.result_xdr)
+                    {
+                        if let Some(OperationResult::OpInner(
+                            OperationResultTr::InvokeHostFunction(
+                                InvokeHostFunctionResult::Success(ScVal::Object(Some(
+                                    ScObject::Bytes(id),
+                                ))),
+                            ),
+                        )) = op_results.get(0)
+                        {
+                            Some(hex::encode(id))
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+                    let bytes = if let Some(code) = r.parameters.get(0) {
+                        if let Ok(ScVal::Object(Some(ScObject::Bytes(bytes)))) =
+                            ScVal::from_xdr_base64(&code.value)
+                        {
+                            Some(bytes.into())
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+                    if let (Some(id), Some(bytes)) = (id, bytes) {
+                        f(Event {
+                            tx: r.transaction_hash.clone(),
+                            at: r.created_at.clone(),
+                            body: EventBody::Deployment(Contract { id, bytes }),
+                        });
+                    }
+                }
+                _ => {}
             }
         }
     }

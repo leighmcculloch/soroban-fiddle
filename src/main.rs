@@ -1,3 +1,4 @@
+use ui::invoke_info::InvokeInfoComp;
 use yew::{
     prelude::{html, Component, Context, Html},
     start_app,
@@ -63,6 +64,11 @@ impl Component for App {
                                 <EventInfoComp event={e.clone()} />
                                 {
                                     match &e.body {
+                                        EventBody::Invocation(i) => html! {
+                                            <>
+                                                <InvokeInfoComp invocation={i.clone()} />
+                                            </>
+                                        },
                                         EventBody::Deployment(c) => html! {
                                             <>
                                                 <ContractInfoComp contract={c.clone()} />

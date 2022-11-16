@@ -70,6 +70,19 @@ impl Component for HistoryComp {
                         let tx_url = format!("{}/transactions/{}", HORIZON_BASE_URL, tx_hash);
                         let selected = self.selected_event.as_ref().map(|e| &e.tx) == Some(&tx_hash);
                         match &e.body {
+                            EventBody::Invocation(i) => {
+                                let c_id = i.id.clone();
+                                html!{
+                                    <tr class={ if selected { "selected" } else { "" } }>
+                                        <td>{ &e.at }</td>
+                                        <td><a href={ tx_url } target="_blank">{ &e.tx[..7] }</a></td>
+                                        <td>{ "invoke" }</td>
+                                        <td></td>
+                                        <td>{ &c_id[..7] }</td>
+                                        <td><button onclick={scope.callback(move |_| HistoryCompMsg::SelectEvent(e.clone()))}>{ "view" }</button></td>
+                                    </tr>
+                                }
+                            },
                             EventBody::Deployment(c) => {
                                 let c_id = c.id.clone();
                                 let c_hash = c.hash();

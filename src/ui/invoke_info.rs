@@ -1,0 +1,42 @@
+use crate::stream::Invocation;
+
+use yew::{
+    prelude::{html, Component, Context, Html},
+    Properties,
+};
+
+#[derive(Default)]
+pub struct InvokeInfoComp;
+
+#[derive(Clone, PartialEq, Properties)]
+pub struct InvokeInfoCompProps {
+    pub invocation: Invocation,
+}
+
+impl Component for InvokeInfoComp {
+    type Message = ();
+    type Properties = InvokeInfoCompProps;
+
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self::default()
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
+        false
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let props = ctx.props();
+        let invocation = &props.invocation;
+        html! {
+            <div class="component invocationinfo">
+                <strong>{ "contract id: " }</strong>{ &invocation.id }<br/>
+                <strong>{ "function: " }</strong>{ &invocation.function }<br/>
+                <strong>{ "args: " }</strong><br/>
+                <pre><code class="language-json">{ invocation.args_json() }</code></pre>
+                <strong>{ "result: " }</strong><br/>
+                <pre><code class="language-json">{ invocation.results_json() }</code></pre>
+            </div>
+        }
+    }
+}

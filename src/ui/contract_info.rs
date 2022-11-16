@@ -9,8 +9,6 @@ use yew::{
     Properties, TargetCast,
 };
 
-use super::hljs;
-
 #[derive(Default)]
 pub struct ContractInfoComp {
     format: Format,

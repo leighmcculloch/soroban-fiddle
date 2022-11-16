@@ -39,14 +39,18 @@ impl Component for InvokeComp {
                 false
             }
             InvokeCompMsg::Invoke => {
-                let props = ctx.props();
-                let contract = &props.contract;
-                self.result = Some(invoke(
-                    contract.bytes.clone(),
-                    contract.id.clone(),
-                    self.function.clone().unwrap(),
-                ));
-                true
+                if let Some(function) = &self.function {
+                    let props = ctx.props();
+                    let contract = &props.contract;
+                    self.result = Some(invoke(
+                        contract.bytes.clone(),
+                        contract.id.clone(),
+                        function.clone(),
+                    ));
+                    true
+                } else {
+                    false
+                }
             }
         }
     }
@@ -72,14 +76,14 @@ impl Component for InvokeComp {
             <div class="component invoke">
                 <strong>{ "function: " }</strong>
                 <select {onchange}>
-                    <option disabled=true selected=true value="">{ "-- select a function --" }</option>
+                    <option value="">{ "-- select a function --" }</option>
                     {
                         for functions.iter().map(|f| {
                             html! { <option value={f.clone()}>{f}</option> }
                         })
                     }
                 </select>
-                <button {onclick}>{ "invoke" }</button>
+                <button {onclick}>{ "invoke" }</button>{ " (only works with functions with zero arguments)" }
                 <br/>
                 <strong>{ "result: " }</strong>
                 <br/>

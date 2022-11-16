@@ -41,6 +41,7 @@ impl Component for EventInfoComp {
                 <strong>{ "event: " }</strong>
                 {
                     match &event.body {
+                        EventBody::Invocation(_) => "invoke",
                         EventBody::Deployment(_) => "deploy",
                     }
                 }

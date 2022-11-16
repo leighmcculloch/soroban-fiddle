@@ -14,7 +14,10 @@ body {
     flex-grow: 1;
 }
 
-.component.contractinfo, .component.invoke, .component.eventinfo {
+.component.eventinfo,
+.component.invocationinfo,
+.component.contractinfo,
+.component.invoke {
     padding: 20px;
     background-color: #ccc;
     margin-bottom: 20px;
