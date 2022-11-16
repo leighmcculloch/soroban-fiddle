@@ -33,9 +33,11 @@ impl Component for InvokeInfoComp {
                 <strong>{ "contract id: " }</strong>{ &invocation.id }<br/>
                 <strong>{ "function: " }</strong>{ &invocation.function }<br/>
                 <strong>{ "args: " }</strong><br/>
-                <pre><code class="language-json">{ invocation.args_json() }</code></pre>
+                <pre><code class="language-json">{ serde_json::to_string_pretty(&invocation.args).unwrap_or_default() }</code></pre>
                 <strong>{ "result: " }</strong><br/>
-                <pre><code class="language-json">{ invocation.results_json() }</code></pre>
+                <pre><code class="language-json">{ serde_json::to_string_pretty(&invocation.result).unwrap_or_default() }</code></pre>
+                <strong>{ "footprint: " }</strong><br/>
+                <pre><code class="language-json">{ serde_json::to_string_pretty(&invocation.footprint).unwrap_or_default() }</code></pre>
             </div>
         }
     }

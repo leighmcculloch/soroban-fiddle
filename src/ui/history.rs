@@ -1,5 +1,5 @@
 use crate::{
-    stream::{collect, Event, EventBody, Order},
+    stream::{collect_events, latest_event_and_cursor, Event, EventBody, Order},
     HORIZON_BASE_URL,
 };
 
@@ -7,6 +7,8 @@ use yew::{
     prelude::{html, Component, Context, Html},
     Callback, Properties,
 };
+
+use futures::future::join;
 
 #[derive(Default)]
 pub struct HistoryComp {
@@ -29,12 +31,24 @@ impl Component for HistoryComp {
     type Properties = HistoryCompProps;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let link = ctx.link().clone();
+        let link_asc = ctx.link().clone();
+        let link_desc = ctx.link().clone();
         wasm_bindgen_futures::spawn_local(async {
-            collect(HORIZON_BASE_URL, Order::Desc, move |event| {
-                link.send_message(HistoryCompMsg::Event(event));
-            })
-            .await;
+            let (event, cursor) = latest_event_and_cursor(HORIZON_BASE_URL).await;
+            if let Some(event) = event {
+                link_asc.send_message(HistoryCompMsg::Event(event));
+            }
+            if let Some(cursor) = cursor {
+                join(
+                    collect_events(HORIZON_BASE_URL, &cursor, Order::Asc, move |event| {
+                        link_asc.send_message(HistoryCompMsg::Event(event));
+                    }),
+                    collect_events(HORIZON_BASE_URL, &cursor, Order::Desc, move |event| {
+                        link_desc.send_message(HistoryCompMsg::Event(event));
+                    }),
+                )
+                .await;
+            }
         });
         Self::default()
     }
@@ -42,7 +56,11 @@ impl Component for HistoryComp {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             HistoryCompMsg::Event(e) => {
-                self.events.push(e);
+                let found = self.events.binary_search_by(|f| f.id.cmp(&e.id).reverse());
+                let i = match found {
+                    Ok(i) | Err(i) => i,
+                };
+                self.events.insert(i, e);
                 true
             }
             HistoryCompMsg::SelectEvent(e) => {

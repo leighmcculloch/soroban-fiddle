@@ -18,5 +18,6 @@ backoff = { version = "0.4.0", git = "https://github.com/leighmcculloch/ihrwein-
 gloo-timers = { version = "0.2.4", features = ["futures"] }
 hex = "0.4.3"
 base64 = "0.13.1"
+futures = "0.3.25"
 
 soroban-env-host = { version = "0.0.9", features = ["vm", "serde"] }
