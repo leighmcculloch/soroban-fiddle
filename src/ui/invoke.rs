@@ -137,9 +137,11 @@ impl Component for InvokeComp {
                         })
                     }
                 </select>
-                <button {onclick}>{ "invoke" }</button>{ " (only works with functions with zero arguments)" }
+                <button {onclick}>{ "invoke" }</button>
+                <br/>
                 <strong>{ "args: " }</strong>{ " (json array of scvals)"}
-                <input ref={args_ref_in_html} value="[]" />
+                <br/>
+                <textarea ref={args_ref_in_html} value="[]" />
                 <br/>
                 <hr/>
                 <strong>{ "result: " }</strong>
