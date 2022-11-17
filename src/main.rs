@@ -53,7 +53,7 @@ impl Component for App {
         let onevent = { scope.callback(AppMsg::SelectEvent) };
         html! {
             <>
-            <div>{ "Soroban Fiddle – data from FutureNet (" }<a href="https://soroban.stellar.org">{ "soroban.stellar.org" }</a>{ ")" }</div>
+            <div class="header">{ "Soroban Fiddle – data from FutureNet (" }<a href="https://soroban.stellar.org">{ "soroban.stellar.org" }</a>{ ")" }</div>
             <div class="columns">
                 <div class="left">
                     <HistoryComp {onevent} />
@@ -87,7 +87,7 @@ impl Component for App {
                 }
                 </div>
             </div>
-            <div><a href="https://github.com/leighmcculloch/soroban-fiddle">{ "https://github.com/leighmcculloch/soroban-fiddle" }</a></div>
+            <div class="footer"><a href="https://github.com/leighmcculloch/soroban-fiddle">{ "open source" }</a></div>
             </>
         }
     }

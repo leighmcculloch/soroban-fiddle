@@ -5,6 +5,18 @@ body {
     font-size: 1.1em;
 }
 
+.header {
+    font-weight: bold;
+}
+
+.footer {
+    margin-top: 20px;
+    font-size: 0.9em;
+    a {
+        color: #ccc;
+    }
+}
+
 .columns {
     display: flex;
 }
