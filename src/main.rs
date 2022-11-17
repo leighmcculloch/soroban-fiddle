@@ -52,6 +52,8 @@ impl Component for App {
         let scope = ctx.link();
         let onevent = { scope.callback(AppMsg::SelectEvent) };
         html! {
+            <>
+            <div>{ "Soroban Fiddle – data from FutureNet (" }<a href="https://soroban.stellar.org">{ "soroban.stellar.org" }</a>{ ")" }</div>
             <div class="columns">
                 <div class="left">
                     <HistoryComp {onevent} />
@@ -85,6 +87,7 @@ impl Component for App {
                 }
                 </div>
             </div>
+            </>
         }
     }
 }
