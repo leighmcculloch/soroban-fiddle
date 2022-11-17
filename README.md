@@ -4,6 +4,8 @@ https://leighmcculloch.github.io/soroban-fiddle
 
 Web frontend-only application that displays data on the [Soroban] [Futurenet] network.
 
+<img width="1465" alt="Screenshot 2022-11-17 at 12 06 05 AM" src="https://user-images.githubusercontent.com/351529/202390826-da662055-300b-4237-8454-dd4a496237d8.png">
+
 ## Features
 
 - Displays deploys/invokes.
