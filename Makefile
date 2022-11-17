@@ -2,7 +2,7 @@ serve:
 	trunk serve
 
 build:
-	trunk build --release --dist docs --public-url 'soroban-fiddle'
+	trunk build --release --public-url 'soroban-fiddle'
 
 check:
 	cargo check

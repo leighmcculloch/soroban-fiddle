@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: |
+        mkdir -p ~/.local/bin
+        echo ~/.local/bin >> $GITHUB_PATH
+        curl -L https://github.com/thedodd/trunk/releases/download/v0.16.0/trunk-x86_64-unknown-linux-gnu.tar.gz | tar xvz -C ~/.local/bin
+    - uses: stellar/actions/rust-cache@5f41ddac4a4a9ce70b3c548ad5a07dc2b96b1195
+    - run: make build
+    - uses: actions/upload-pages-artifact@v1
+      with:
+        path: ./dist
+
+  deploy:
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - uses: actions/configure-pages@v2
+    - id: deployment
+      uses: actions/deploy-pages@v1
