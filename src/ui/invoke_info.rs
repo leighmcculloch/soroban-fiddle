@@ -36,6 +36,8 @@ impl Component for InvokeInfoComp {
                 <pre><code class="language-json">{ serde_json::to_string_pretty(&invocation.args).unwrap_or_default() }</code></pre>
                 <strong>{ "result: " }</strong><br/>
                 <pre><code class="language-json">{ serde_json::to_string_pretty(&invocation.result).unwrap_or_default() }</code></pre>
+                <strong>{ "events: " }</strong><br/>
+                <pre><code class="language-json">{ serde_json::to_string_pretty(&invocation.events).unwrap_or_default() }</code></pre>
                 <strong>{ "footprint: " }</strong><br/>
                 <pre><code class="language-json">{ serde_json::to_string_pretty(&invocation.footprint).unwrap_or_default() }</code></pre>
             </div>

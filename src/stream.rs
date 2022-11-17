@@ -3,8 +3,9 @@ use std::time::Duration;
 use super::horizonapi;
 use soroban_spec::gen::rust::ToFormattedString;
 use stellar_xdr::{
-    InvokeHostFunctionResult, LedgerFootprint, OperationResult, OperationResultTr, ReadXdr,
-    ScObject, ScSpecEntry, ScSpecFunctionV0, ScVal, TransactionResult, TransactionResultResult,
+    ContractEvent, InvokeHostFunctionResult, LedgerFootprint, OperationResult, OperationResultTr,
+    ReadXdr, ScObject, ScSpecEntry, ScSpecFunctionV0, ScVal, TransactionMeta, TransactionMetaV3,
+    TransactionResult, TransactionResultResult,
 };
 
 #[derive(Clone, PartialEq, PartialOrd)]
@@ -37,6 +38,7 @@ pub struct Invocation {
     pub args: Vec<Option<ScVal>>,
     pub result: Option<ScVal>,
     pub footprint: Option<LedgerFootprint>,
+    pub events: Option<Vec<ContractEvent>>,
 }
 
 #[derive(Clone, PartialEq, PartialOrd)]
@@ -96,7 +98,13 @@ pub async fn latest_event_and_cursor(base_url: &str) -> (Option<Event>, Option<S
     (events.first().cloned(), cursor)
 }
 
-pub async fn collect_events(base_url: &str, cursor: &str, o: Order, d: Duration, f: impl Fn(Event)) {
+pub async fn collect_events(
+    base_url: &str,
+    cursor: &str,
+    o: Order,
+    d: Duration,
+    f: impl Fn(Event),
+) {
     let mut next = get_operations_url(base_url, cursor, o, 10);
     loop {
         let (events, _, next_url) = get_operations(base_url, &next).await;
@@ -191,6 +199,14 @@ pub async fn get_operations(base_url: &str, url: &str) -> (Vec<Event>, Option<St
                 } else {
                     None
                 };
+                let contract_events =
+                    if let Ok(TransactionMeta::V3(TransactionMetaV3 { events, .. })) =
+                        TransactionMeta::from_xdr_base64(tx.result_meta_xdr)
+                    {
+                        Some(events.into())
+                    } else {
+                        None
+                    };
                 let footprint = if let Some(footprint) = &r.footprint {
                     if let Ok(footprint) = LedgerFootprint::from_xdr_base64(footprint) {
                         Some(footprint)
@@ -211,6 +227,7 @@ pub async fn get_operations(base_url: &str, url: &str) -> (Vec<Event>, Option<St
                             args,
                             result,
                             footprint,
+                            events: contract_events,
                         }),
                     });
                 }
