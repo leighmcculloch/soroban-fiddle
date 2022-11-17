@@ -1538,6 +1538,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "soroban-fiddle"
+version = "0.1.0"
+dependencies = [
+ "backoff",
+ "base64",
+ "futures",
+ "gloo-timers",
+ "hex",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha256",
+ "soroban-env-host",
+ "soroban-spec",
+ "stellar-xdr 0.0.7 (git+https://github.com/stellar/rs-stellar-xdr?rev=e88f9fa7)",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "yew",
+]
+
+[[package]]
 name = "soroban-native-sdk-macros"
 version = "0.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1592,28 +1614,6 @@ dependencies = [
  "memory_units",
  "num-rational",
  "num-traits",
-]
-
-[[package]]
-name = "sorolive-yew"
-version = "0.1.0"
-dependencies = [
- "backoff",
- "base64",
- "futures",
- "gloo-timers",
- "hex",
- "reqwest",
- "serde",
- "serde_derive",
- "serde_json",
- "sha256",
- "soroban-env-host",
- "soroban-spec",
- "stellar-xdr 0.0.7 (git+https://github.com/stellar/rs-stellar-xdr?rev=e88f9fa7)",
- "wasm-bindgen-futures",
- "web-sys",
- "yew",
 ]
 
 [[package]]

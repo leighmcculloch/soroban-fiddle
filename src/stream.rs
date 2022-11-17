@@ -13,6 +13,15 @@ pub struct Event {
     pub body: EventBody,
 }
 
+impl Event {
+    pub fn contract_id(&self) -> String {
+        match &self.body {
+            EventBody::Invocation(i) => i.id.clone(),
+            EventBody::Deployment(d) => d.id.clone(),
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, PartialOrd)]
 pub enum EventBody {
     Invocation(Invocation),

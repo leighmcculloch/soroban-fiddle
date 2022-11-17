@@ -1,4 +1,4 @@
-use ui::invoke_info::InvokeInfoComp;
+use ui::{history::SelectedEvent, invoke_info::InvokeInfoComp};
 use yew::{
     prelude::{html, Component, Context, Html},
     start_app,
@@ -9,14 +9,15 @@ mod stream;
 mod ui;
 mod vm;
 
-use stream::{Event, EventBody};
+use stream::EventBody;
 
 use crate::ui::contract_info::ContractInfoComp;
 use crate::ui::event_info::EventInfoComp;
 use crate::ui::history::HistoryComp;
 use crate::ui::invoke::InvokeComp;
 
-const HORIZON_BASE_URL: &str = "https://horizon-futurenet.stellar.org";
+// const HORIZON_BASE_URL: &str = "https://horizon-futurenet.stellar.org";
+const HORIZON_BASE_URL: &str = "http://localhost:8000";
 
 fn main() {
     start_app::<App>();
@@ -24,11 +25,11 @@ fn main() {
 
 #[derive(Default)]
 struct App {
-    selected_event: Option<Event>,
+    selected_event: Option<SelectedEvent>,
 }
 
 enum AppMsg {
-    SelectEvent(Event),
+    SelectEvent(SelectedEvent),
 }
 
 impl Component for App {
@@ -61,9 +62,9 @@ impl Component for App {
                     if let Some(e) = &self.selected_event {
                         html!{
                             <>
-                                <EventInfoComp event={e.clone()} />
+                                <EventInfoComp event={e.event.clone()} />
                                 {
-                                    match &e.body {
+                                    match &e.event.body {
                                         EventBody::Invocation(i) => html! {
                                             <>
                                                 <InvokeInfoComp invocation={i.clone()} />
@@ -72,7 +73,7 @@ impl Component for App {
                                         EventBody::Deployment(c) => html! {
                                             <>
                                                 <ContractInfoComp contract={c.clone()} />
-                                                <InvokeComp contract={c.clone()} />
+                                                <InvokeComp contract={c.clone()} event={e.event.clone()} related_events={e.related.clone()} />
                                             </>
                                         },
                                     }

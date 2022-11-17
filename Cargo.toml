@@ -1,5 +1,5 @@
 [package]
-name = "sorolive-yew"
+name = "soroban-fiddle"
 version = "0.1.0"
 edition = "2021"
 

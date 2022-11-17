@@ -18,7 +18,12 @@ pub struct HistoryComp {
 
 #[derive(Clone, PartialEq, Properties)]
 pub struct HistoryCompProps {
-    pub onevent: Callback<Event>,
+    pub onevent: Callback<SelectedEvent>,
+}
+
+pub struct SelectedEvent {
+    pub event: Event,
+    pub related: Vec<Event>,
 }
 
 pub enum HistoryCompMsg {
@@ -68,7 +73,15 @@ impl Component for HistoryComp {
                     false
                 } else {
                     self.selected_event = Some(e.clone());
-                    ctx.props().onevent.emit(e);
+                    let related = self
+                        .events
+                        .iter()
+                        .filter(|r| r.contract_id() == e.contract_id())
+                        .cloned()
+                        .collect();
+                    ctx.props()
+                        .onevent
+                        .emit(SelectedEvent { event: e, related });
                     true
                 }
             }
