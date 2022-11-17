@@ -1,7 +1,14 @@
 [package]
 name = "soroban-fiddle"
-version = "0.1.0"
+description = "Displaying data for the Soroban Futurenet."
+version = "0.0.0"
 edition = "2021"
+homepage = "https://leighmcculloch.github.io/soroban-fiddle"
+repository = "https://github.com/leighmcculloch/soroban-fiddle"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+readme = "README.md"
+rust-version = "1.65"
 
 [dependencies]
 wasm-bindgen-futures = "0.4.33"
@@ -9,6 +16,7 @@ yew = "0.19.3"
 web-sys = { version = "0.3.60", features = ["HtmlSelectElement"] }
 stellar-xdr = { git = "https://github.com/stellar/rs-stellar-xdr", rev = "e88f9fa7", features = ["serde", "base64", "next"] }
 soroban-spec = { git = "https://github.com/stellar/rs-soroban-sdk" }
+soroban-env-host = { version = "0.0.9", features = ["vm", "serde"] }
 serde = "1.0.147"
 serde_derive = "1.0.147"
 serde_json = "1.0.87"
@@ -19,5 +27,3 @@ gloo-timers = { version = "0.2.4", features = ["futures"] }
 hex = "0.4.3"
 base64 = "0.13.1"
 futures = "0.3.25"
-
-soroban-env-host = { version = "0.0.9", features = ["vm", "serde"] }
