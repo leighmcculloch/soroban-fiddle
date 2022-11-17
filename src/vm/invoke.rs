@@ -8,7 +8,7 @@ use soroban_env_host::{
         LedgerEntryExt, LedgerKey, LedgerKeyContractData, PublicKey, ScContractCode,
         ScHostStorageErrorCode, ScObject, ScStatic, ScStatus, ScVal, Uint256,
     },
-    Host, HostError, MeteredOrdMap, Status,
+    Host, HostError, MeteredOrdMap, Status, events::Events,
 };
 
 pub fn invoke(
@@ -20,6 +20,8 @@ pub fn invoke(
 ) -> (
     String,
     MeteredOrdMap<Box<LedgerKey>, Option<Box<LedgerEntry>>>,
+    Budget,
+    Events,
 ) {
     let hex_id = hex::decode(&id).unwrap();
     let mut sources: Vec<Box<dyn SnapshotSource>> = vec![Box::new(CodeOnlySnapshotSource(
@@ -51,7 +53,7 @@ pub fn invoke(
         Err(err) => err.to_string(),
     };
 
-    let (Storage { map: storage, .. }, _, _) = h
+    let (Storage { map: storage, .. }, budget, events) = h
         .try_finish()
         .map_err(|_h| {
             HostError::from(ScStatus::HostStorageError(
@@ -60,7 +62,7 @@ pub fn invoke(
         })
         .unwrap();
 
-    (result_str, storage)
+    (result_str, storage, budget, events)
 }
 
 struct MultiSnapshotSource(Vec<Box<dyn SnapshotSource>>);

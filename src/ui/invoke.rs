@@ -1,7 +1,8 @@
 use crate::stream::{Contract, Event, EventBody};
 use crate::vm::invoke::invoke;
 
-use soroban_env_host::xdr::ReadXdr;
+use soroban_env_host::events::HostEvent;
+use soroban_env_host::{budget::Budget, events::Events, xdr::ReadXdr};
 use stellar_xdr::WriteXdr;
 use web_sys::{HtmlInputElement, HtmlSelectElement};
 use yew::NodeRef;
@@ -15,6 +16,8 @@ use yew::{
 pub struct InvokeComp {
     function: Option<String>,
     result: Option<String>,
+    budget: Option<Budget>,
+    events: Option<Events>,
 }
 
 #[derive(Clone, PartialEq, Properties)]
@@ -61,7 +64,7 @@ impl Component for InvokeComp {
                         .collect::<Vec<_>>();
                     let mut storage = None;
                     for i in related_invocations {
-                        let (_, new_storage) = invoke(
+                        let (_, new_storage, _, _) = invoke(
                             storage,
                             contract.bytes.clone(),
                             contract.id.clone(),
@@ -82,7 +85,7 @@ impl Component for InvokeComp {
                         );
                         storage = Some(new_storage);
                     }
-                    let (result, _) = invoke(
+                    let (result, _, budget, events) = invoke(
                         storage,
                         contract.bytes.clone(),
                         contract.id.clone(),
@@ -90,6 +93,8 @@ impl Component for InvokeComp {
                         serde_json::from_str(&args).unwrap(),
                     );
                     self.result = Some(result);
+                    self.budget = Some(budget);
+                    self.events = Some(events);
                     true
                 } else {
                     false
@@ -101,6 +106,8 @@ impl Component for InvokeComp {
     fn changed(&mut self, _ctx: &Context<Self>) -> bool {
         self.function = None;
         self.result = None;
+        self.budget = None;
+        self.events = None;
         true
     }
 
@@ -109,6 +116,26 @@ impl Component for InvokeComp {
         let props = ctx.props();
         let contract = &props.contract;
         let functions = contract.fns();
+        let events = if let Some(Events(events)) = &self.events {
+            events
+                .iter()
+                .map(|e| match e {
+                    HostEvent::Contract(e) => serde_json::to_string_pretty(e).unwrap_or_default(),
+                    _ => String::new(),
+                })
+                .collect::<Vec<_>>()
+        } else {
+            vec![]
+        };
+        let budget = if let Some(budget) = &self.budget {
+            format!(
+                "cpu: {} mem: {}",
+                budget.get_cpu_insns_count(),
+                budget.get_mem_bytes_count()
+            )
+        } else {
+            String::new()
+        };
         let onchange = {
             scope.callback(|e: events::Event| InvokeCompMsg::SelectFunction {
                 function: e.target_unchecked_into::<HtmlSelectElement>().value(),
@@ -146,7 +173,15 @@ impl Component for InvokeComp {
                 <hr/>
                 <strong>{ "result: " }</strong>
                 <br/>
-                <code>{ self.result.clone().unwrap_or_default() }</code>
+                <pre><code>{ self.result.clone().unwrap_or_default() }</code></pre>
+                <br/>
+                <strong>{ "events: " }</strong>
+                <br/>
+                <pre><code>{ events }</code></pre>
+                <br/>
+                <strong>{ "budget: " }</strong>
+                <br/>
+                <pre><code>{ budget }</code></pre>
             </div>
         }
     }
