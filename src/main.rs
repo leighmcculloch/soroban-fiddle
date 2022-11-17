@@ -16,10 +16,7 @@ use crate::ui::event_info::EventInfoComp;
 use crate::ui::history::HistoryComp;
 use crate::ui::invoke::InvokeComp;
 
-#[cfg(not(debug_assertions))]
 const HORIZON_BASE_URL: &str = "https://horizon-futurenet.stellar.org";
-#[cfg(debug_assertions)]
-const HORIZON_BASE_URL: &str = "http://localhost:8000";
 
 fn main() {
     start_app::<App>();

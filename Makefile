@@ -1,5 +1,5 @@
 serve:
-	trunk serve --release
+	trunk serve
 
 build:
 	trunk build --release --dist docs --public-url 'soroban-fiddle'
