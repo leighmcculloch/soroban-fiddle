@@ -87,6 +87,7 @@ impl Component for App {
                 }
                 </div>
             </div>
+            <div><a href="https://github.com/leighmcculloch/soroban-fiddle">{ "https://github.com/leighmcculloch/soroban-fiddle" }</a></div>
             </>
         }
     }
