@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use super::horizonapi;
 use soroban_spec::gen::rust::ToFormattedString;
 use stellar_xdr::{
@@ -94,7 +96,7 @@ pub async fn latest_event_and_cursor(base_url: &str) -> (Option<Event>, Option<S
     (events.first().cloned(), cursor)
 }
 
-pub async fn collect_events(base_url: &str, cursor: &str, o: Order, f: impl Fn(Event)) {
+pub async fn collect_events(base_url: &str, cursor: &str, o: Order, d: Duration, f: impl Fn(Event)) {
     let mut next = get_operations_url(base_url, cursor, o, 10);
     loop {
         let (events, _, next_url) = get_operations(base_url, &next).await;
@@ -102,6 +104,7 @@ pub async fn collect_events(base_url: &str, cursor: &str, o: Order, f: impl Fn(E
             f(e);
         }
         next = next_url;
+        gloo_timers::future::sleep(d).await;
     }
 }
 

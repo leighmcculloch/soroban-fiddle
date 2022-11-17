@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{
     stream::{collect_events, latest_event_and_cursor, Event, EventBody, Order},
     HORIZON_BASE_URL,
@@ -45,10 +47,10 @@ impl Component for HistoryComp {
             }
             if let Some(cursor) = cursor {
                 join(
-                    collect_events(HORIZON_BASE_URL, &cursor, Order::Asc, move |event| {
+                    collect_events(HORIZON_BASE_URL, &cursor, Order::Asc, Duration::from_secs(3), move |event| {
                         link_asc.send_message(HistoryCompMsg::Event(event));
                     }),
-                    collect_events(HORIZON_BASE_URL, &cursor, Order::Desc, move |event| {
+                    collect_events(HORIZON_BASE_URL, &cursor, Order::Desc, Duration::from_secs(1), move |event| {
                         link_desc.send_message(HistoryCompMsg::Event(event));
                     }),
                 )
